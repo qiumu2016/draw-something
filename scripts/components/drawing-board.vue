@@ -79,11 +79,12 @@ class Draw {
 export default {
     ready() {
         let remote = 'ws://draw-demo-websockmo-liyue-yrsbihvszx.cn-hangzhou.fcapp.run'
-        let local =   'ws://localhost:8090'
-        const ws = new WebSocket(remote)
+        let local =   'ws://localhost:8091'
+        const ws = new WebSocket(local)
         let draw = new Draw('canvas')
         let btn = document.getElementById('btn')
         ws.onopen = () => {
+            ws.send("room_id:" + this.$parent.room_id)
             draw.init(ws, btn)
         }
         ws.onmessage = (msg) => {

@@ -12,8 +12,8 @@
     export default {
         ready() {
             let remote = 'ws://draw-demo-websockmo-liyue-yrsbihvszx.cn-hangzhou.fcapp.run'
-            let local =   'ws://localhost:8090'
-            const ws = new WebSocket(remote);
+            let local =   'ws://localhost:8091'
+            const ws = new WebSocket(local);
             const canvas = document.getElementById('showing')
             const cxt = canvas.getContext('2d')
             let moveToSwitch = 1
@@ -40,6 +40,7 @@
             }
 
             ws.onopen = () => {
+                ws.send("room_id:" + this.$parent.room_id)
                 let submitBtn = document.getElementById('submit')
                 submitBtn.onclick = () => {
                     let keyword = document.getElementById('answer').value
