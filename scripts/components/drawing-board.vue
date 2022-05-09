@@ -78,7 +78,9 @@ class Draw {
 
 export default {
     ready() {
-        const ws = new WebSocket('ws://localhost:8090')
+        let remote = 'ws://draw-demo-websockmo-liyue-yrsbihvszx.cn-hangzhou.fcapp.run'
+        let local =   'ws://localhost:8090'
+        const ws = new WebSocket(remote)
         let draw = new Draw('canvas')
         let btn = document.getElementById('btn')
         ws.onopen = () => {

@@ -11,7 +11,9 @@
     'use strict'
     export default {
         ready() {
-            const ws = new WebSocket('ws://localhost:8090');
+            let remote = 'ws://draw-demo-websockmo-liyue-yrsbihvszx.cn-hangzhou.fcapp.run'
+            let local =   'ws://localhost:8090'
+            const ws = new WebSocket(remote);
             const canvas = document.getElementById('showing')
             const cxt = canvas.getContext('2d')
             let moveToSwitch = 1
@@ -19,7 +21,9 @@
               let pathObj = msg.data.split('.')
               cxt.strokeStyle = "#000"
               
-              if (moveToSwitch && msg.data != 'stop' && msg.data != 'clear') {
+              if (msg.data == '答对了！！') {
+                  alert('恭喜你答对了！！')
+              }else if (moveToSwitch && msg.data != 'stop' && msg.data != 'clear') {
                   cxt.beginPath()
                   cxt.moveTo(pathObj[0], pathObj[1])
                   moveToSwitch = 0
@@ -29,8 +33,6 @@
                   moveToSwitch = 1
               } else if (moveToSwitch && msg.data == 'clear') {
                   cxt.clearRect(0, 0, 500, 500)
-              } else if (msg.data == '答对了！！') {
-                  alert('恭喜你答对了！！')
               }
 
               cxt.lineTo(pathObj[2], pathObj[3])
