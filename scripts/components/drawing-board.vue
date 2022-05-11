@@ -8,7 +8,9 @@
 </template>
 
 <script>
+
 'use strict'
+import remote from './env.js'
 
 class Draw {
     constructor(el) {
@@ -78,9 +80,11 @@ class Draw {
 
 export default {
     ready() {
-        let remote = 'ws://draw-demo-websockmo-liyue-yrsbihvszx.cn-hangzhou.fcapp.run'
         let local =   'ws://localhost:8091'
-        const ws = new WebSocket(local)
+        let origin = remote.remote
+        let url = "ws://" + origin.substring(origin.lastIndexOf('/'))
+        console.log('ws:' + url)
+        const ws = new WebSocket(url);
         let draw = new Draw('canvas')
         let btn = document.getElementById('btn')
         ws.onopen = () => {

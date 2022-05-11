@@ -1,0 +1,39 @@
+{
+  "statefulConfig": {
+    "serviceName": "websocket-demo-liyue",
+    "description": "a webSocket demo",
+    "role": "acs:ram::1431999136518149:role/doudizhu-role",
+    "logConfig": {
+      "project": "doudizhu-demo",
+      "logstore": "douidizhu-logstore",
+      "enableRequestMetrics": true,
+      "enableInstanceMetrics": true,
+      "logBeginRule": "DefaultRegex"
+    },
+    "serviceId": "34d74ce1-87b8-4daa-aebf-17adbc3b9f9f",
+    "createdTime": "2022-04-22T06:51:17Z",
+    "lastModifiedTime": "2022-05-11T02:18:41Z",
+    "vpcConfig": {
+      "vpcId": "vpc-bp1d0akjuit2sryyj10zs",
+      "vSwitchIds": [
+        "vsw-bp1394mnjbnj0moeq8yl3"
+      ],
+      "securityGroupId": "sg-bp16onajjqzjn08u1a33",
+      "role": "",
+      "anytunnelViaENI": null
+    },
+    "internetAccess": true,
+    "nasConfig": {
+      "userId": -1,
+      "groupId": -1,
+      "mountPoints": []
+    },
+    "vendorConfig": null,
+    "tracingConfig": {
+      "type": null,
+      "params": null,
+      "jaegerConfig": null
+    },
+    "name": "websocket-demo-liyue"
+  }
+}

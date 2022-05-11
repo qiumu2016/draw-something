@@ -9,11 +9,15 @@
 
 <script>
     'use strict'
+    import remote from './env.js'
     export default {
         ready() {
-            let remote = 'ws://draw-demo-websockmo-liyue-yrsbihvszx.cn-hangzhou.fcapp.run'
+
             let local =   'ws://localhost:8091'
-            const ws = new WebSocket(local);
+            let origin = remote.remote
+            let url = "ws://" + origin.substring(origin.lastIndexOf('/'))
+            console.log('ws:' + url)
+            const ws = new WebSocket(url);
             const canvas = document.getElementById('showing')
             const cxt = canvas.getContext('2d')
             let moveToSwitch = 1

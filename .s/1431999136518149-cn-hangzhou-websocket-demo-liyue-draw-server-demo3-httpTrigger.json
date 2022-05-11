@@ -1,0 +1,22 @@
+{
+  "statefulConfig": {
+    "triggerName": "httpTrigger",
+    "description": "",
+    "triggerId": "7467b104-3c05-4b29-9723-3caa18e5ff0f",
+    "sourceArn": null,
+    "triggerType": "http",
+    "invocationRole": null,
+    "qualifier": null,
+    "urlInternet": "https://draw-sever-demo-websockmo-liyue-ljdlyvcfca.cn-hangzhou.fcapp.run",
+    "urlIntranet": "https://draw-sever-demo-websockmo-liyue-ljdlyvcfca.cn-hangzhou-vpc.fcapp.run",
+    "triggerConfig": {
+      "methods": [
+        "GET"
+      ],
+      "authType": "anonymous"
+    },
+    "createdTime": "2022-05-10T09:09:17Z",
+    "lastModifiedTime": "2022-05-11T02:18:15Z",
+    "name": "httpTrigger"
+  }
+}

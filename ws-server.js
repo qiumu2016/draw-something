@@ -1,6 +1,6 @@
 'use strict'
 const WebSocketServer = require('ws').Server
-  , wss = new WebSocketServer({host:'0.0.0.0',port: 8091})
+  , wss = new WebSocketServer({host:'0.0.0.0',port:process.env.ServerPort})
 
 const redis = require('./RedisConfig')
 

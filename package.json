@@ -1,7 +1,7 @@
 {
   "name": "draw-something",
   "version": "1.0.0",
-  "description": "简单版的你画我猜",
+  "description": "分布式你画我猜",
   "main": "index.js",
   "scripts": {
     "dev": "node server.js",
