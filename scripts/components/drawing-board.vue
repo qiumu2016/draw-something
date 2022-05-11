@@ -4,7 +4,7 @@
         <span>Keyword: </span>
         <span id="keyword"></span>
     </div>
-    <button id="btn">清空画布</button>
+    <button id="btn" class="button">清空画布</button>
 </template>
 
 <script>
