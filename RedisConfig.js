@@ -4,7 +4,6 @@
   const options = {
     host: redisOptions.host,
     port: redisOptions.port,
-    password: redisOptions.password,
     detect_buffers: redisOptions.detect_buffers, // 传入buffer 返回也是buffer 否则会转换成String
     retry_strategy: function (options) {
       // 重连机制
