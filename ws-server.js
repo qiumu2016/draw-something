@@ -192,17 +192,24 @@ function showerClose(ws,code,buffer,room_id){
     console.log("猜者关闭页面  End--------------")
 }
 
+//redis接收到订阅的信息
+function subscriber(){
+    redis.subscriber.on('message', (channel, message) => {
+        console.log('Message # Channel ' + channel + ': ' + message)
+        broadCastToPalyers(channel,message)
+    });
+}
+
 async function main() {
+
+    subscriber()
 
 	wss.on('connection', function connection(ws) {
         console.log('connected.')
-        let room_id //记录当前ws对应的room_id
+        
+        //记录当前ws对应的room_id
+        let room_id 
 
-        redis.subscriber.on('message', (channel, message) => {
-            console.log('Message # Channel ' + channel + ': ' + message)
-            broadCastToPalyers(channel,message)
-        });
-    
         //处理收到的消息
         ws.on('message', function(message) {
             console.log('received: %s', message)
@@ -220,6 +227,14 @@ async function main() {
                 console.log(room_id+'房间发来消息：' + message)
                 broadCastRedis(room_id,message)
             }
+        })
+
+        //打印连接错误信息
+        ws.on('error',function(err) {
+            console.log('房间：'+ room_id +' ws连接出现错误')
+            console.log('err name：'+ err.name)
+            console.log('err message：'+ err.message)
+            throw new Error(err)
         })
     })
 };
