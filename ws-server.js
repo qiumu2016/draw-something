@@ -67,13 +67,17 @@ function deleteWs(ws,room_id){
     console.log("deleteWs Start -------------------------- ")
     console.log("room_id:"+room_id)
     let ind = 0
-    roomInfo[room_id].players.forEach((item, index, arr) => {
-        if(item == ws){
-            ind = index
-        }
-    })
-    roomInfo[room_id].players.splice(ind,1)
-    console.log("deleteWs end -------------------------- ")
+    try {
+        roomInfo[room_id].players.forEach((item, index, arr) => {
+            if(item == ws){
+                ind = index
+            }
+        })
+        roomInfo[room_id].players.splice(ind,1)
+        console.log("deleteWs end -------------------------- ")
+    } catch (error) {
+        throw new Error(err)
+    }
 }
 
 //处理新进入的玩家
