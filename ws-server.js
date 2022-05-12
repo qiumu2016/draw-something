@@ -43,16 +43,13 @@ function broadCastKeyWord(room_id, keyWord){
 
 //根据channel向对应玩家广播
 function broadCastToPalyers(channel,message){
-    console.log("broadCastToPalyers Start -------------------------- ")
     let room_id = channel.substring(8)
     console.log("向room_ "+room_id+ "广播:" + message)
-    console.log("room list:"+Object.keys(roomInfo))
     if(room_id in roomInfo){
         for(let ws of roomInfo[room_id].players){
             ws.send(message)
         }
     }
-    console.log("broadCastToPalyers End -------------------------- ")
 }
 
 //人数为0时，删除房间
@@ -81,7 +78,7 @@ function deleteWs(ws,room_id){
 }
 
 //处理新进入的玩家
-function handleNewPlayer(ws,room_id){
+function handleNewPlayer(ws,room_id,isValid){
     console.log("handleNewPlayer Start -------------------------- ")
     if(room_id in roomInfo ){
         roomInfo[room_id].players.push(ws)
@@ -92,6 +89,15 @@ function handleNewPlayer(ws,room_id){
         roomInfo[room_id].isSub = false
     }
     console.log("room list:"+Object.keys(roomInfo))
+
+    if(!isValid){
+        redis.incValue(room_id).then(res => {
+            console.log(room_id +"非法加入，将会退出")
+        }).catch(err => { throw new Error(err)}).finally(res => {
+            return
+        })
+        return
+    }
 
     redis.getValue(room_id).then(res => {
         console.log(room_id + "加入前玩家数目："+res)
@@ -104,8 +110,8 @@ function handleNewPlayer(ws,room_id){
             redis.incValue(room_id).then(res => {
                 console.log(room_id +"加入后玩家数目："+res)
             }).catch(err => { throw new Error(err)})
-
-            broadCastKeyWord(room_id,keyWord)
+            //broadCastKeyWord(room_id,keyWord)
+            ws.send('keyword:' + keyWord)
         }else { //已有房间，需要获取答案
             redis.getValue(room_id+'_'+key).then(res => {
                 let keyWord = res
@@ -115,11 +121,75 @@ function handleNewPlayer(ws,room_id){
                     console.log(room_id+"加入后玩家数目："+res)
                 }).catch(err => { throw new Error(err)})
 
-                broadCastKeyWord(room_id,keyWord)
+                //broadCastKeyWord(room_id,keyWord)
+                ws.send('keyword:' + keyWord)
             }).catch(err => { throw new Error(err)})
         }
     }).catch(err => { throw new Error(err)})
     console.log("handleNewPlayer end -------------------------- ")
+}
+
+//处理新加入的绘画者
+function handleNewDrawer(ws,room_id) {
+    console.log("handleNewDrawer Start -------------------------- ")
+    redis.getValue(room_id + '_draw').then(res => {
+        console.log(res)
+        //没有绘画者，合法
+        if(res == 0 || res == null || res == '0'){
+            redis.setValue(room_id + '_draw','1')
+            handleNewPlayer(ws,room_id,true)
+            ws.on('close',function(ws,code,buffer){drawerClose(ws,code,buffer,room_id)})
+        }else {  //已经有绘画者了，此绘画者非法
+            handleNewPlayer(ws,room_id,false)
+            ws.send('hasDrawer')
+            ws.on('close',function(ws,code,buffer){showerClose(ws,code,buffer,room_id)})
+        }
+    }).catch(err => { throw new Error(err)})
+    console.log("handleNewDrawer End -------------------------- ")
+}
+
+//处理新加入的猜测者
+function handleNewshower(ws,room_id) {
+    console.log("handleNewshower Start -------------------------- ")
+    handleNewPlayer(ws,room_id,true)
+    ws.on('close',function(ws,code,buffer){showerClose(ws,code,buffer,room_id)})
+    console.log("handleNewshower End -------------------------- ")
+}
+
+//绘画者退出
+function drawerClose(ws,code,buffer,room_id){
+    console.log("画者关闭页面  Stard--------------")
+    console.log('room_id:' + room_id)
+    deleteWs(ws,room_id)
+    redis.setValue(room_id + '_draw','0')
+    redis.decValue(room_id).then(res => {
+        console.log("目前剩余玩家：%d",res)
+        if(res == 0){
+            unSubChannel(room_id)
+            deleteRoom(room_id)
+        }
+    }).catch(err => {
+        throw new Error(err)
+    })
+    console.log("画者关闭页面  End--------------")
+}
+
+
+//猜测者退出
+function showerClose(ws,code,buffer,room_id){
+    console.log("猜者关闭页面  Stard--------------")
+    console.log('room_id:' + room_id)
+    deleteWs(ws,room_id)
+    redis.decValue(room_id).then(res => {
+        console.log("目前剩余玩家：%d",res)
+        if(res == 0){
+            unSubChannel(room_id)
+            deleteRoom(room_id)
+        }
+    }).catch(err => {
+        throw new Error(err)
+    })
+    console.log("猜者关闭页面  End--------------")
 }
 
 async function main() {
@@ -137,9 +207,12 @@ async function main() {
         ws.on('message', function(message) {
             console.log('received: %s', message)
             let msg = message.toString()
-            if (msg.substring(0,7)=="room_id"){
-                room_id = msg.substring(8)
-                handleNewPlayer(this, room_id)
+            if (msg.substring(0,12)=="draw_room_id"){
+                room_id = msg.substring(13)
+                handleNewDrawer(this, room_id)
+            }else if (msg.substring(0,12)=="show_room_id"){
+                room_id = msg.substring(13)
+                handleNewshower(this, room_id)
             }else if (message == roomInfo[room_id].keyWord) {
                 console.log('correct')
                 ws.send('答对了！！')
@@ -148,26 +221,7 @@ async function main() {
                 broadCastRedis(room_id,message)
             }
         })
-
-        //关闭连接时，对房间信息进行更新
-        ws.on('close',function(ws,code,buffer){
-            console.log("玩家关闭页面  Stard--------------")
-            console.log('room_id:' + room_id)
-            deleteWs(ws,room_id)
-            redis.decValue(room_id).then(res => {
-                console.log("目前剩余玩家：%d",res)
-                if(res == 0){
-                    unSubChannel(room_id)
-                    deleteRoom(room_id)
-                }
-            }).catch(err => {
-                throw new Error(err)
-            })
-            console.log("玩家关闭页面  End--------------")
-        })
     })
-
-    
 };
 
 main()

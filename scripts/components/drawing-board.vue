@@ -88,13 +88,24 @@ export default {
         let draw = new Draw('canvas')
         let btn = document.getElementById('btn')
         ws.onopen = () => {
-            ws.send("room_id:" + this.$parent.room_id)
+            ws.send("draw_room_id:" + this.$parent.room_id)
             draw.init(ws, btn)
         }
         ws.onmessage = (msg) => {
+            console.log('ws:' + msg.data)
+            if (msg.data == 'hasDrawer'){
+                alert('已经有绘画玩家了，请参与竞猜！')
+                ws.close()
+                this.$parent.player = 2
+            }
             msg.data.split(':')[0] == 'keyword' ?
                 document.getElementById('keyword').innerHTML = msg.data.split(':')[1] :
                 false
+        }
+        ws.onerror = (ev) => {
+            alert('连接中断了，请重试！')
+            this.$parent.player = 0
+            throw new Error(ev)
         }
     }
 }

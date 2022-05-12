@@ -44,12 +44,17 @@
             }
 
             ws.onopen = () => {
-                ws.send("room_id:" + this.$parent.room_id)
+                ws.send("show_room_id:" + this.$parent.room_id)
                 let submitBtn = document.getElementById('submit')
                 submitBtn.onclick = () => {
                     let keyword = document.getElementById('answer').value
                     ws.send(keyword)
                 }
+            }
+            ws.onerror = (ev) => {
+                alert('连接中断了，请重试！')
+                this.$parent.player = 0
+                throw new Error(ev)
             }
         }
     }
