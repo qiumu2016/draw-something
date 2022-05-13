@@ -47,9 +47,15 @@ function broadCastToPalyers(channel,message){
     console.log("向room_ "+room_id+ "广播:" + message)
     if(room_id in roomInfo){
         for(let ws of roomInfo[room_id].players){
-            ws.send(message)
+            if(ws.readyState == ws.OPEN){
+                ws.send(message)
+            }
         }
     }
+}
+
+function isZero(num){
+    return (num == 0 || num == null || num == '0' || parseInt(num) == 0)
 }
 
 //人数为0时，删除房间
@@ -102,7 +108,7 @@ function handleNewPlayer(ws,room_id,isValid){
     redis.getValue(room_id).then(res => {
         console.log(room_id + "加入前玩家数目："+res)
         //新房间，需要生成答案
-        if(res == 0 || res == null || res == '0'){
+        if(isZero(res)){
             let keyWord = getWord(wordArr)
             roomInfo[room_id].keyWord = keyWord
             redis.setValue(room_id+'_'+key,keyWord)
@@ -112,7 +118,7 @@ function handleNewPlayer(ws,room_id,isValid){
             }).catch(err => { throw new Error(err)})
             //broadCastKeyWord(room_id,keyWord)
             ws.send('keyword:' + keyWord)
-        }else { //已有房间，需要获取答案
+        }else if(res > 0 || parseInt(res) > 0){ //已有房间，需要获取答案
             redis.getValue(room_id+'_'+key).then(res => {
                 let keyWord = res
                 roomInfo[room_id].keyWord = keyWord
@@ -124,6 +130,8 @@ function handleNewPlayer(ws,room_id,isValid){
                 //broadCastKeyWord(room_id,keyWord)
                 ws.send('keyword:' + keyWord)
             }).catch(err => { throw new Error(err)})
+        }else {
+            ws.close()
         }
     }).catch(err => { throw new Error(err)})
     console.log("handleNewPlayer end -------------------------- ")
@@ -135,7 +143,7 @@ function handleNewDrawer(ws,room_id) {
     redis.getValue(room_id + '_draw').then(res => {
         console.log(res)
         //没有绘画者，合法
-        if(res == 0 || res == null || res == '0'){
+        if(isZero(res)){
             redis.setValue(room_id + '_draw','1')
             handleNewPlayer(ws,room_id,true)
             ws.on('close',function(ws,code,buffer){drawerClose(ws,code,buffer,room_id)})
@@ -164,9 +172,12 @@ function drawerClose(ws,code,buffer,room_id){
     redis.setValue(room_id + '_draw','0')
     redis.decValue(room_id).then(res => {
         console.log("目前剩余玩家：%d",res)
-        if(res == 0){
+        if(res <= 0){
             unSubChannel(room_id)
             deleteRoom(room_id)
+        }
+        if(res < 0){
+            redis.setValue(room_id ,'0')
         }
     }).catch(err => {
         throw new Error(err)
@@ -182,9 +193,13 @@ function showerClose(ws,code,buffer,room_id){
     deleteWs(ws,room_id)
     redis.decValue(room_id).then(res => {
         console.log("目前剩余玩家：%d",res)
-        if(res == 0){
+        if(res <= 0){
             unSubChannel(room_id)
             deleteRoom(room_id)
+            redis.setValue(room_id + '_draw','0')
+        }
+        if(res < 0){
+            redis.setValue(room_id ,'0')
         }
     }).catch(err => {
         throw new Error(err)
@@ -206,7 +221,7 @@ async function main() {
 
 	wss.on('connection', function connection(ws) {
         console.log('connected.')
-        
+
         //记录当前ws对应的room_id
         let room_id 
 
