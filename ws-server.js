@@ -118,7 +118,7 @@ function handleNewPlayer(ws,room_id,isValid){
             }).catch(err => { throw new Error(err)})
             //broadCastKeyWord(room_id,keyWord)
             ws.send('keyword:' + keyWord)
-        }else if(res > 0 || parseInt(res) > 0){ //已有房间，需要获取答案
+        }else if((res > 0 || parseInt(res) > 0) && (res < 200 || parseInt(res) < 200)){ //已有房间，需要获取答案
             redis.getValue(room_id+'_'+key).then(res => {
                 let keyWord = res
                 roomInfo[room_id].keyWord = keyWord
@@ -130,6 +130,8 @@ function handleNewPlayer(ws,room_id,isValid){
                 //broadCastKeyWord(room_id,keyWord)
                 ws.send('keyword:' + keyWord)
             }).catch(err => { throw new Error(err)})
+        }else if(res >= 200 || parseInt(res) >= 200) {
+            ws.send("满员了")
         }else {
             ws.close()
         }

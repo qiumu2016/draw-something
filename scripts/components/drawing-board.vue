@@ -97,10 +97,15 @@ export default {
                 alert('已经有绘画玩家了，请参与竞猜！')
                 ws.close()
                 this.$parent.player = 2
-            }
-            msg.data.split(':')[0] == 'keyword' ?
+            }else if(msg.data == '满员了'){
+                alert('房间满员啦，请选择其他房间！')
+                ws.close()
+                this.$parent.player = 0
+            }else {
+                msg.data.split(':')[0] == 'keyword' ?
                 document.getElementById('keyword').innerHTML = msg.data.split(':')[1] :
                 false
+            }
         }
         ws.onerror = (ev) => {
             alert('连接中断了，请重试！')

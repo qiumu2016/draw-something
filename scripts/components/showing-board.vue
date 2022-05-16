@@ -27,6 +27,10 @@
               
               if (msg.data == '答对了！！') {
                   alert('恭喜你答对了！！')
+              }else if(msg.data == '满员了'){
+                alert('房间满员啦，请选择其他房间！')
+                ws.close()
+                this.$parent.player = 0
               }else if (moveToSwitch && msg.data != 'stop' && msg.data != 'clear') {
                   cxt.beginPath()
                   cxt.moveTo(pathObj[0], pathObj[1])
